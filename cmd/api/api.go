@@ -6,6 +6,8 @@ import (
 	"net/http"
 
 	"github.com/gorilla/mux"
+	"github.com/halimi/ecom/service/cart"
+	"github.com/halimi/ecom/service/order"
 	"github.com/halimi/ecom/service/product"
 	"github.com/halimi/ecom/service/user"
 )
@@ -31,8 +33,13 @@ func (s *APIServer) Run() error {
 	userHandler.RegisterRoutes(subrouter)
 
 	productStore := product.NewStore(s.db)
-	productHandler := product.NewHandler(productStore)
+	productHandler := product.NewHandler(productStore, userStore)
 	productHandler.RegisterRoutes(subrouter)
+
+	orderStore := order.NewStore(s.db)
+
+	cartHandler := cart.NewHandler(orderStore, productStore, userStore)
+	cartHandler.RegisterRoutes(subrouter)
 
 	log.Println("Listening on", s.addr)
 
